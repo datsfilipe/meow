@@ -1,22 +1,22 @@
+use crate::util;
+
 use nvim_rs::{
     Neovim, compat::tokio::Compat, create::tokio as create, rpc::handler::Dummy as DummyHandler,
 };
-
 use tokio::process::{ChildStdin, Command};
-
-const NVIMPATH: &str = "/etc/profiles/per-user/dtsf/bin/nvim";
 
 pub struct Nvim {
     instance: Neovim<Compat<ChildStdin>>,
 }
 
 impl Nvim {
-    pub async fn new() -> Self {
+    pub async fn new(config_path: &str) -> Self {
         let handler = DummyHandler::new();
 
+        let path = util::path::get_nvim_bin_path();
         let (nvim, _io_handle, _child) = create::new_child_cmd(
-            Command::new(NVIMPATH)
-                .args(&["-u", "NONE", "--embed", "--headless"])
+            Command::new(path)
+                .args(&["-u", &config_path, "--embed", "--headless"])
                 .env("NVIM_LOG_FILE", "nvimlog"),
             handler,
         )
