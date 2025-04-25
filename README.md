@@ -38,6 +38,10 @@ Guidelines for contributing to the project:
 3. Submit a pull request.
 4. Nothing fancy, contributions are welcome.
 
+## Aknowledgements
+
+- [nvim-cat](https://github.com/lincheney/nvim-cat) - The inspiration for this project
+
 ## License  
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
