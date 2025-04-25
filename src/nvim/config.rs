@@ -51,7 +51,7 @@ impl Config {
             Err(_) => {
                 return Err(io::Error::new(
                     io::ErrorKind::NotFound,
-                    "missing data directory, please set XDG_DATA_HOME! nyah",
+                    "missing data directory, please set XDG_DATA_HOME, nya!",
                 ));
             }
         };
@@ -76,7 +76,7 @@ impl Config {
         if parts.len() < 2 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "Invalid repository format. Expected USER/REPO",
+                "invalid repository format. Expected USER/REPO, nya!",
             ));
         }
 
@@ -105,7 +105,7 @@ impl Config {
             fs::remove_dir_all(&install)?;
             return Err(io::Error::new(
                 io::ErrorKind::Other,
-                "Not a colorscheme plugin",
+                "not a colorscheme plugin, nya!",
             ));
         }
 
@@ -117,7 +117,7 @@ impl Config {
         if parts.len() < 2 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "Invalid repository format. Expected USER/REPO",
+                "invalid repository format. Expected USER/REPO, nya!",
             ));
         }
 
@@ -141,7 +141,7 @@ impl Config {
         if parts.len() < 2 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "Invalid repository format. Expected USER/REPO",
+                "invalid repository format. Expected USER/REPO, nya!",
             ));
         }
 

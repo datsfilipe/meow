@@ -67,32 +67,32 @@ pub fn parse_args() -> Result<Args, String> {
             }
             arg if arg.starts_with("--add-colorscheme=") => {
                 if seen_colorscheme_command {
-                    return Err("Colorscheme commands are not composable".to_string());
+                    return Err("colorscheme commands are not composable, nya!".to_string());
                 }
 
                 let value = arg
                     .strip_prefix("--add-colorscheme=")
                     .map(|s| s.to_string())
-                    .ok_or_else(|| "Invalid format for --add-colorscheme".to_string())?;
+                    .ok_or_else(|| "invalid format for --add-colorscheme, nya!".to_string())?;
 
                 result.add_colorscheme = Some(value);
                 seen_colorscheme_command = true;
             }
             "--add-colorscheme" => {
                 if seen_colorscheme_command {
-                    return Err("Colorscheme commands are not composable".to_string());
+                    return Err("colorscheme commands are not composable, nya!".to_string());
                 }
 
                 let value = args_iter
                     .next()
-                    .ok_or_else(|| "Missing value for --add-colorscheme".to_string())?;
+                    .ok_or_else(|| "missing value for --add-colorscheme, nya!".to_string())?;
 
                 result.add_colorscheme = Some(value);
                 seen_colorscheme_command = true;
             }
             arg if arg.starts_with("--set-colorscheme=") => {
                 if seen_colorscheme_command {
-                    return Err("Colorscheme commands are not composable".to_string());
+                    return Err("colorscheme commands are not composable, nya!".to_string());
                 }
 
                 let value = arg
@@ -110,14 +110,14 @@ pub fn parse_args() -> Result<Args, String> {
 
                 let value = args_iter
                     .next()
-                    .ok_or_else(|| "Missing value for --set-colorscheme".to_string())?;
+                    .ok_or_else(|| "missing value for --set-colorscheme, nya!".to_string())?;
 
                 result.set_colorscheme = Some(value);
                 seen_colorscheme_command = true;
             }
             arg if arg.starts_with("--remove-colorscheme=") => {
                 if seen_colorscheme_command {
-                    return Err("Colorscheme commands are not composable".to_string());
+                    return Err("colorscheme commands are not composable, nya!".to_string());
                 }
 
                 let value = arg
@@ -130,12 +130,12 @@ pub fn parse_args() -> Result<Args, String> {
             }
             "--remove-colorscheme" => {
                 if seen_colorscheme_command {
-                    return Err("Colorscheme commands are not composable".to_string());
+                    return Err("colorscheme commands are not composable, nya!".to_string());
                 }
 
                 let value = args_iter
                     .next()
-                    .ok_or_else(|| "Missing value for --remove-colorscheme".to_string())?;
+                    .ok_or_else(|| "missing value for --remove-colorscheme, nya!".to_string())?;
 
                 result.remove_colorscheme = Some(value);
                 seen_colorscheme_command = true;
@@ -145,11 +145,13 @@ pub fn parse_args() -> Result<Args, String> {
             }
             _ => {
                 if seen_colorscheme_command {
-                    return Err("File arguments not allowed with colorscheme commands".to_string());
+                    return Err(
+                        "file arguments not allowed with colorscheme commands, nya!".to_string()
+                    );
                 }
 
                 if result.file_path.is_some() {
-                    return Err("Only one file path is allowed".to_string());
+                    return Err("only one file path is allowed, nya!".to_string());
                 }
 
                 result.file_path = Some(arg);
@@ -158,14 +160,14 @@ pub fn parse_args() -> Result<Args, String> {
     }
 
     if expecting_config_path {
-        return Err("Missing path for --config".to_string());
+        return Err("missing path for --config, nya!".to_string());
     }
 
     Ok(result)
 }
 
 pub fn print_usage() {
-    eprintln!("Usage:");
+    eprintln!("usage:");
     eprintln!("  bin [FILE]");
     eprintln!("  bin --config PATH [FILE]");
     eprintln!("  bin --add-colorscheme USER/REPO(/TREE/BRANCH)");
@@ -173,6 +175,6 @@ pub fn print_usage() {
     eprintln!("  bin --remove-colorscheme USER/REPO");
     eprintln!();
     eprintln!(
-        "Note: Colorscheme commands cannot be combined with each other or with file arguments."
+        "note: colorscheme commands cannot be combined with each other or with file arguments, nya!"
     );
 }

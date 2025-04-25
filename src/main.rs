@@ -7,7 +7,7 @@ async fn main() {
     match util::validate::is_nvim_installed() {
         true => {}
         false => {
-            println!("nvim not found, nyah!");
+            println!("nvim not found, nya!");
             return;
         }
     }
@@ -58,12 +58,12 @@ async fn main() {
                     return;
                 }
 
-                println!("missing file path, nyah!");
+                println!("missing file path, nya!");
                 std::process::exit(1);
             }
         }
         Err(e) => {
-            eprintln!("Error parsing arguments: {}\n", e);
+            eprintln!("error parsing arguments: {}, {}\n", e, "nya!");
             cli::args::print_usage();
             std::process::exit(1);
         }

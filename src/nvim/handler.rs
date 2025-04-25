@@ -155,7 +155,7 @@ impl Nvim {
                 .await;
         }
         res.map_err(|e| {
-            eprintln!("{}", e);
+            eprintln!("{}, {}", e, "nyah!");
             std::process::exit(1)
         })
     }
