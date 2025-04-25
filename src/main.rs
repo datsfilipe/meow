@@ -1,3 +1,4 @@
+mod cli;
 mod nvim;
 mod util;
 
@@ -12,8 +13,42 @@ async fn main() {
     }
 
     let config = nvim::config::Config::new(None::<std::path::PathBuf>);
-    config.init_default().unwrap();
-
     let nvim = nvim::handler::Nvim::new(config.path.to_str().unwrap()).await;
+
+    match cli::args::parse_args() {
+        Ok(args) => {
+            if args.help.is_some() {
+                cli::args::print_usage();
+                return;
+            };
+
+            if args.add_colorscheme.is_some() {
+                config
+                    .add_colorscheme(&args.add_colorscheme.unwrap())
+                    .unwrap();
+                return;
+            }
+
+            if args.set_colorscheme.is_some() {
+                config
+                    .set_colorscheme(&args.set_colorscheme.unwrap())
+                    .unwrap();
+                return;
+            }
+
+            if args.remove_colorscheme.is_some() {
+                config
+                    .remove_colorscheme(&args.remove_colorscheme.unwrap())
+                    .unwrap();
+                return;
+            }
+        }
+        Err(e) => {
+            eprintln!("Error parsing arguments: {}\n", e);
+            cli::args::print_usage();
+            std::process::exit(1);
+        }
+    }
+
     nvim.hello_world().await;
 }

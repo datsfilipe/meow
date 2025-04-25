@@ -16,8 +16,10 @@ impl Nvim {
         let path = util::path::get_nvim_bin_path();
         let (nvim, _io_handle, _child) = create::new_child_cmd(
             Command::new(path)
-                .args(&["-u", &config_path, "--embed", "--headless"])
-                .env("NVIM_LOG_FILE", "nvimlog"),
+                .args(&["--embed", "--headless"])
+                .env("NVIM_LOG_FILE", "nvimlog")
+                .env("NVIM_APPNAME", "nv-meow")
+                .env("XDG_CONFIG_HOME", config_path),
             handler,
         )
         .await
