@@ -2,7 +2,7 @@
 
 ## Description
 
-Meow uses neovim text editor to print highlighted text in the terminal. Yeah, like `cat`, `bat`, etc. But with neovim, which allow it to more confirable, since it uses lua. The tool config is managed in another location, out
+Meow uses neovim text editor to print highlighted text in the terminal. Yeah, like `cat`, `bat`, etc. But with neovim, which allow it to be more configurable, since it uses lua. The tool config is managed in another location, out
 
 ## Preview
 
