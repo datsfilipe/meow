@@ -61,6 +61,8 @@ async fn main() {
                 println!("missing file path, nya!");
                 std::process::exit(1);
             }
+
+            cli::args::print_usage();
         }
         Err(e) => {
             eprintln!("error parsing arguments: {}, {}\n", e, "nya!");
