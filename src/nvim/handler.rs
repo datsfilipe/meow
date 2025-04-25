@@ -38,8 +38,11 @@ impl Nvim {
             .unwrap_or("");
 
         let (n, io, c) = create::new_child_cmd(
-            tokio::process::Command::new(util::path::get_nvim_bin_path())
-                .args(&["--embed", "--noplugin"]),
+            tokio::process::Command::new(util::path::get_nvim_bin_path()).args(&[
+                "--embed",
+                "--clean",
+                "--noplugin",
+            ]),
             nvim_rs::rpc::handler::Dummy::new(),
         )
         .await
