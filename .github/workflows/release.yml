@@ -1,3 +1,11 @@
+on:
+  release:
+    types: [published]
+
+permissions:
+    contents: write
+    packages: write
+
 jobs:
   release:
     name: release - ${{ matrix.platform.release_for }}
