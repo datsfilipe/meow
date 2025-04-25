@@ -5,6 +5,8 @@ use std::{
     process::Command,
 };
 
+use crate::util;
+
 pub const DEFAULT_CONFIG: &str = r#"-- Lua default init for nv-meow
 vim.opt.compatible = false
 
@@ -72,6 +74,13 @@ impl Config {
     }
 
     pub fn add_colorscheme(&self, repo_spec: &str) -> io::Result<()> {
+        if !util::validate::is_git_installed() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "git not found, nyah!",
+            ));
+        }
+
         let parts: Vec<&str> = repo_spec.split('/').collect();
         if parts.len() < 2 {
             return Err(io::Error::new(
