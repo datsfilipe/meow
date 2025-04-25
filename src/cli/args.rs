@@ -168,11 +168,11 @@ pub fn parse_args() -> Result<Args, String> {
 
 pub fn print_usage() {
     eprintln!("usage:");
-    eprintln!("  bin [FILE]");
-    eprintln!("  bin --config PATH [FILE]");
-    eprintln!("  bin --add-colorscheme USER/REPO(/TREE/BRANCH)");
-    eprintln!("  bin --set-colorscheme USER/REPO");
-    eprintln!("  bin --remove-colorscheme USER/REPO");
+    eprintln!("  meow [FILE]");
+    eprintln!("  meow --config PATH [FILE]");
+    eprintln!("  meow --add-colorscheme USER/REPO(/TREE/BRANCH)");
+    eprintln!("  meow --set-colorscheme USER/REPO");
+    eprintln!("  meow --remove-colorscheme USER/REPO");
     eprintln!();
     eprintln!(
         "note: colorscheme commands cannot be combined with each other or with file arguments, nya!"
