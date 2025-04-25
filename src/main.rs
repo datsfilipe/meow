@@ -42,6 +42,25 @@ async fn main() {
                     .unwrap();
                 return;
             }
+
+            if args.file_path.is_some() {
+                nvim.print_file_with_highlighting(&args.file_path.unwrap())
+                    .await
+                    .unwrap();
+                return;
+            }
+
+            if args.config_path.is_some() {
+                if args.file_path.is_some() {
+                    nvim.print_file_with_highlighting(&args.file_path.unwrap())
+                        .await
+                        .unwrap();
+                    return;
+                }
+
+                println!("missing file path, nyah!");
+                std::process::exit(1);
+            }
         }
         Err(e) => {
             eprintln!("Error parsing arguments: {}\n", e);
@@ -49,6 +68,4 @@ async fn main() {
             std::process::exit(1);
         }
     }
-
-    nvim.hello_world().await;
 }
