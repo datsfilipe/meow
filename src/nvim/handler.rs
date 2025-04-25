@@ -17,6 +17,7 @@ const EXTRACT_HL_LUA: &str = include_str!("./conf/extract_hl.lua");
 
 pub struct Nvim {
     instance: Neovim<Compat<ChildStdin>>,
+    config_path: String,
     _io: tokio::task::JoinHandle<Result<(), Box<LoopError>>>,
     _child: tokio::process::Child,
 }
@@ -30,18 +31,21 @@ impl Drop for Nvim {
 
 impl Nvim {
     pub async fn new(config: &str) -> Self {
+        let config_dir = Path::new(config)
+            .parent()
+            .unwrap_or_else(|| Path::new(""))
+            .to_str()
+            .unwrap_or("");
+
         let (n, io, c) = create::new_child_cmd(
-            tokio::process::Command::new(util::path::get_nvim_bin_path()).args(&[
-                "--embed",
-                "--headless",
-                "-u",
-                config,
-            ]),
+            tokio::process::Command::new(util::path::get_nvim_bin_path())
+                .args(&["--embed", "--noplugin"]),
             nvim_rs::rpc::handler::Dummy::new(),
         )
         .await
         .unwrap();
         Self {
+            config_path: config_dir.to_string(),
             instance: n,
             _io: io,
             _child: c,
@@ -65,8 +69,15 @@ impl Nvim {
             let esc = path.replace(' ', r"\ ");
             self.instance.command(&format!("edit {}", esc)).await?;
 
-            self.instance.command("syntax on").await?;
+            self.instance.command("syntax enable").await?;
             self.instance.command("set termguicolors").await?;
+
+            self.instance
+                .command(format!("source {}/init.lua", self.config_path).as_str())
+                .await?;
+            self.instance
+                .command(format!("source {}/plugin/colorscheme.lua", self.config_path).as_str())
+                .await?;
 
             let highlighted_lines = self.instance.execute_lua(EXTRACT_HL_LUA, vec![]).await?;
             if let Value::Array(lines) = highlighted_lines {
