@@ -33,5 +33,6 @@ jobs:
         uses: houseabsolute/actions-rust-release@v0
         with:
           executable-name: ubi
+          changes-file: ""
           target: ${{ matrix.platform.target }}
         if: matrix.toolchain == 'stable'
