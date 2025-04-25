@@ -32,7 +32,7 @@ jobs:
       - name: publish artifacts and release
         uses: houseabsolute/actions-rust-release@v0
         with:
-          executable-name: ubi
+          executable-name: meow
           changes-file: ""
           target: ${{ matrix.platform.target }}
         if: matrix.toolchain == 'stable'
