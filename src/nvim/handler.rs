@@ -4,6 +4,17 @@ use nvim_rs::{Neovim, Value, compat::tokio::Compat, create::tokio as create, err
 use std::path::Path;
 use tokio::process::ChildStdin;
 
+#[derive(Debug, Default)]
+struct HighlightInfo {
+    fg: Option<u32>,
+    bg: Option<u32>,
+    bold: bool,
+    italic: bool,
+    underline: bool,
+}
+
+const EXTRACT_HL_LUA: &str = include_str!("./conf/extract_hl.lua");
+
 pub struct Nvim {
     instance: Neovim<Compat<ChildStdin>>,
     _io: tokio::task::JoinHandle<Result<(), Box<LoopError>>>,
@@ -20,9 +31,12 @@ impl Drop for Nvim {
 impl Nvim {
     pub async fn new(config: &str) -> Self {
         let (n, io, c) = create::new_child_cmd(
-            tokio::process::Command::new(util::path::get_nvim_bin_path())
-                .args(&["--embed", "--headless"])
-                .env("XDG_CONFIG_HOME", config),
+            tokio::process::Command::new(util::path::get_nvim_bin_path()).args(&[
+                "--embed",
+                "--headless",
+                "-u",
+                config,
+            ]),
             nvim_rs::rpc::handler::Dummy::new(),
         )
         .await
@@ -51,37 +65,85 @@ impl Nvim {
             let esc = path.replace(' ', r"\ ");
             self.instance.command(&format!("edit {}", esc)).await?;
 
-            let val = self
-                .instance
-                .call_function(
-                    "nvim_buf_get_lines",
-                    vec![
-                        Value::from(0),
-                        Value::from(0),
-                        Value::from(-1),
-                        Value::from(true),
-                    ],
-                )
-                .await?;
+            self.instance.command("syntax on").await?;
+            self.instance.command("set termguicolors").await?;
 
-            if let Value::Array(a) = val {
-                if a.is_empty() {
-                    let cnt = self
-                        .instance
-                        .call_function("line", vec![Value::from("$")])
-                        .await?
-                        .as_i64()
-                        .unwrap_or(0);
-                    if cnt > 0 {
-                        eprintln!("Warning: highlights not ready.");
-                    }
-                }
-                for v in a {
-                    if let Some(l) = v.as_str() {
-                        println!("{}", l)
+            let highlighted_lines = self.instance.execute_lua(EXTRACT_HL_LUA, vec![]).await?;
+            if let Value::Array(lines) = highlighted_lines {
+                for line_data in lines {
+                    if let Value::Map(line_map) = line_data {
+                        let segments = line_map
+                            .iter()
+                            .find(|(k, _)| k.as_str() == Some("segments"))
+                            .and_then(|(_, v)| v.as_array().cloned())
+                            .unwrap_or_default();
+
+                        let mut output_line = String::new();
+
+                        for segment in segments {
+                            if let Value::Map(segment_map) = segment {
+                                let text = segment_map
+                                    .iter()
+                                    .find(|(k, _)| k.as_str() == Some("text"))
+                                    .and_then(|(_, v)| v.as_str())
+                                    .unwrap_or("");
+
+                                let hl: Vec<_> = segment_map
+                                    .iter()
+                                    .find(|(k, _)| k.as_str() == Some("hl"))
+                                    .and_then(|(_, v)| v.as_map().cloned())
+                                    .unwrap_or_default();
+
+                                let fg = hl
+                                    .iter()
+                                    .find(|(k, _)| k.as_str() == Some("fg"))
+                                    .and_then(|(_, v)| v.as_u64())
+                                    .map(|v| v as u32);
+
+                                let bg = hl
+                                    .iter()
+                                    .find(|(k, _)| k.as_str() == Some("bg"))
+                                    .and_then(|(_, v)| v.as_u64())
+                                    .map(|v| v as u32);
+
+                                let bold = hl
+                                    .iter()
+                                    .find(|(k, _)| k.as_str() == Some("bold"))
+                                    .and_then(|(_, v)| v.as_bool())
+                                    .unwrap_or(false);
+
+                                let italic = hl
+                                    .iter()
+                                    .find(|(k, _)| k.as_str() == Some("italic"))
+                                    .and_then(|(_, v)| v.as_bool())
+                                    .unwrap_or(false);
+
+                                let underline = hl
+                                    .iter()
+                                    .find(|(k, _)| k.as_str() == Some("underline"))
+                                    .and_then(|(_, v)| v.as_bool())
+                                    .unwrap_or(false);
+
+                                let hl_info = HighlightInfo {
+                                    fg,
+                                    bg,
+                                    bold,
+                                    italic,
+                                    underline,
+                                };
+
+                                let ansi_codes = self.ansi(&hl_info);
+                                output_line.push_str(&ansi_codes);
+                                output_line.push_str(text);
+                                output_line.push_str("\x1b[0m");
+                            }
+                        }
+
+                        println!("{}", output_line);
                     }
                 }
             }
+
             Ok::<(), Box<dyn std::error::Error>>(())
         }
         .await;
@@ -96,5 +158,36 @@ impl Nvim {
             eprintln!("{}", e);
             std::process::exit(1)
         })
+    }
+
+    fn ansi(&self, hl: &HighlightInfo) -> String {
+        let mut codes = Vec::new();
+        codes.push("0".to_string());
+
+        if hl.bold {
+            codes.push("1".to_string());
+        }
+        if hl.italic {
+            codes.push("3".to_string());
+        }
+        if hl.underline {
+            codes.push("4".to_string());
+        }
+
+        if let Some(color) = hl.fg {
+            let r = (color >> 16) & 0xFF;
+            let g = (color >> 8) & 0xFF;
+            let b = color & 0xFF;
+            codes.push(format!("38;2;{};{};{}", r, g, b));
+        }
+
+        if let Some(color) = hl.bg {
+            let r = (color >> 16) & 0xFF;
+            let g = (color >> 8) & 0xFF;
+            let b = color & 0xFF;
+            codes.push(format!("48;2;{};{};{}", r, g, b));
+        }
+
+        format!("\x1b[{}m", codes.join(";"))
     }
 }
