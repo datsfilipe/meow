@@ -29,7 +29,6 @@ for i, line_text in ipairs(lines) do
 
 	for col = 0, #line_text do
 		local synid = vim.fn.synID(i, col + 1, 1)
-		-- local synid = vim.fn.synID(i, col + 1, true)
 		local trans_id = vim.fn.synIDtrans(synid)
 
 		if trans_id ~= 0 then
