@@ -85,19 +85,20 @@ impl Nvim {
             let esc = path.replace(' ', r"\ ");
             let init_commands = format!(
                 "edit {esc} \
-                 | syntax enable \
-                 | set termguicolors \
-                 | source {path}/init.lua \
-                 | if filereadable('{path}/plugin/colorscheme.lua') \
-                 |   silent! source {path}/plugin/colorscheme.lua \
-                 | endif \
-                 | normal! gg=G",
+             | syntax enable \
+             | set termguicolors \
+             | source {path}/init.lua \
+             | if filereadable('{path}/plugin/colorscheme.lua') \
+             |   silent! source {path}/plugin/colorscheme.lua \
+             | endif \
+             | normal! gg=G",
                 esc = esc,
                 path = self.config_path
             );
             self.instance.command(&init_commands).await?;
 
             let highlighted_lines = self.instance.execute_lua(EXTRACT_HL_LUA, vec![]).await?;
+
             if let Value::Array(lines) = highlighted_lines {
                 let mut output_lines = Vec::with_capacity(lines.len());
 
@@ -186,7 +187,33 @@ impl Nvim {
                     }
                 }
 
-                println!("{}", output_lines.join("\n"));
+                let term_height = term_size::dimensions().map(|(_, h)| h - 2).unwrap_or(24);
+                let is_less_installed = util::validate::is_less_installed();
+
+                if output_lines.len() > term_height && is_less_installed {
+                    use std::io::Write;
+                    use std::process::{Command, Stdio};
+
+                    let less_cmd = if cfg!(target_os = "windows") {
+                        Command::new("more").stdin(Stdio::piped()).spawn()
+                    } else {
+                        Command::new("less")
+                            .args(["-R"])
+                            .stdin(Stdio::piped())
+                            .spawn()
+                    };
+
+                    if let Ok(mut child) = less_cmd {
+                        if let Some(stdin) = child.stdin.as_mut() {
+                            writeln!(stdin, "{}", output_lines.join("\n"))?;
+                        }
+                        child.wait()?;
+                    } else {
+                        println!("{}", output_lines.join("\n"));
+                    }
+                } else {
+                    println!("{}", output_lines.join("\n"));
+                }
             }
 
             Ok::<(), Box<dyn std::error::Error + Send + Sync + 'static>>(())
