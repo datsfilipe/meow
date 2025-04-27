@@ -15,6 +15,13 @@ vim.cmd([[filetype off]])
 vim.cmd([[filetype plugin indent on]])
 vim.cmd([[syntax on]])
 
+vim.opt_local.shiftwidth = 2
+vim.opt_local.softtabstop = 2
+vim.opt_local.tabstop = 2
+vim.opt_local.smartindent = true
+vim.opt_local.cindent = false
+vim.opt_local.expandtab = true
+
 local base = vim.fn.expand('~/.local/share/meow')
 for _, d in ipairs(vim.fn.glob(base .. '/*', true, true)) do
   vim.opt.runtimepath:append(d)
