@@ -186,7 +186,33 @@ impl Nvim {
                     }
                 }
 
-                println!("{}", output_lines.join("\n"));
+                let term_height = term_size::dimensions().map(|(_, h)| h - 2).unwrap_or(24);
+                let is_less_installed = util::validate::is_less_installed();
+
+                if output_lines.len() > term_height && is_less_installed {
+                    use std::io::Write;
+                    use std::process::{Command, Stdio};
+
+                    let less_cmd = if cfg!(target_os = "windows") {
+                        Command::new("more").stdin(Stdio::piped()).spawn()
+                    } else {
+                        Command::new("less")
+                            .args(["-R"])
+                            .stdin(Stdio::piped())
+                            .spawn()
+                    };
+
+                    if let Ok(mut child) = less_cmd {
+                        if let Some(stdin) = child.stdin.as_mut() {
+                            writeln!(stdin, "{}", output_lines.join("\n"))?;
+                        }
+                        child.wait()?;
+                    } else {
+                        println!("{}", output_lines.join("\n"));
+                    }
+                } else {
+                    println!("{}", output_lines.join("\n"));
+                }
             }
 
             Ok::<(), Box<dyn std::error::Error + Send + Sync + 'static>>(())
