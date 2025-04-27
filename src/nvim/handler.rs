@@ -1,8 +1,8 @@
-use nvim_rs::{Neovim, Value, compat::tokio::Compat, create::tokio as create, error::LoopError};
-use std::{path::Path, sync::Arc, collections::HashMap};
-use tokio::{process::ChildStdin, sync::Mutex};
-
 use crate::util;
+
+use nvim_rs::{Neovim, Value, compat::tokio::Compat, create::tokio as create, error::LoopError};
+use std::{collections::HashMap, path::Path, sync::Arc};
+use tokio::{process::ChildStdin, sync::Mutex};
 
 #[derive(Debug, Default, Clone, Hash)]
 struct HighlightInfo {
@@ -16,11 +16,11 @@ struct HighlightInfo {
 impl Eq for HighlightInfo {}
 impl PartialEq for HighlightInfo {
     fn eq(&self, other: &Self) -> bool {
-        self.fg == other.fg && 
-        self.bg == other.bg && 
-        self.bold == other.bold && 
-        self.italic == other.italic && 
-        self.underline == other.underline
+        self.fg == other.fg
+            && self.bg == other.bg
+            && self.bold == other.bold
+            && self.italic == other.italic
+            && self.underline == other.underline
     }
 }
 
@@ -53,7 +53,7 @@ impl Nvim {
 
         let (n, io, c) = create::new_child_cmd(
             tokio::process::Command::new(util::path::get_nvim_bin_path()).args(&[
-                "--embed", 
+                "--embed",
                 "-i",
                 "NONE",
                 "--clean",
@@ -64,7 +64,7 @@ impl Nvim {
         )
         .await
         .unwrap();
-        
+
         Self {
             config_path: config_dir.into(),
             instance: n,
@@ -76,7 +76,7 @@ impl Nvim {
     pub async fn print_file_with_highlighting(
         &self,
         file_path: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let abs = Path::new(file_path).canonicalize()?;
         let path = abs.to_str().ok_or("invalid UTF-8 in path")?;
         let mut del = None;
@@ -89,15 +89,22 @@ impl Nvim {
 
             let esc = path.replace(' ', r"\ ");
             let init_commands = format!(
-                "edit {} | syntax enable | set termguicolors | source {}/init.lua | source {}/plugin/colorscheme.lua",
-                esc, self.config_path, self.config_path
+                "edit {esc} \
+                 | syntax enable \
+                 | set termguicolors \
+                 | source {path}/init.lua \
+                 | if filereadable('{path}/plugin/colorscheme.lua') \
+                 |   silent! source {path}/plugin/colorscheme.lua \
+                 | endif",
+                esc = esc,
+                path = self.config_path
             );
             self.instance.command(&init_commands).await?;
 
             let highlighted_lines = self.instance.execute_lua(EXTRACT_HL_LUA, vec![]).await?;
             if let Value::Array(lines) = highlighted_lines {
                 let mut output_lines = Vec::with_capacity(lines.len());
-                
+
                 for line_data in lines {
                     if let Value::Map(line_map) = line_data {
                         let segments = line_map
@@ -106,16 +113,19 @@ impl Nvim {
                             .and_then(|(_, v)| v.as_array().cloned())
                             .unwrap_or_default();
 
-                        let mut output_line = String::with_capacity(
-                            segments.iter().fold(0, |acc, s| {
+                        let mut output_line =
+                            String::with_capacity(segments.iter().fold(0, |acc, s| {
                                 if let Value::Map(m) = s {
-                                    if let Some(Value::String(text)) = m.iter().find(|(k, _)| k.as_str() == Some("text")).map(|(_, v)| v) {
+                                    if let Some(Value::String(text)) = m
+                                        .iter()
+                                        .find(|(k, _)| k.as_str() == Some("text"))
+                                        .map(|(_, v)| v)
+                                    {
                                         return acc + text.as_str().unwrap_or("").len() + 20;
                                     }
                                 }
                                 acc
-                            })
-                        );
+                            }));
 
                         for segment in segments {
                             if let Value::Map(segment_map) = segment {
@@ -179,11 +189,11 @@ impl Nvim {
                         output_lines.push(output_line);
                     }
                 }
-                
+
                 println!("{}", output_lines.join("\n"));
             }
 
-            Ok::<(), Box<dyn std::error::Error>>(())
+            Ok::<(), Box<dyn std::error::Error + Send + Sync + 'static>>(())
         }
         .await;
 
@@ -193,10 +203,8 @@ impl Nvim {
                 .command(&format!("silent! bdelete! {}", n))
                 .await;
         }
-        res.map_err(|e| {
-            eprintln!("{}, {}", e, "nyah!");
-            std::process::exit(1)
-        })
+
+        res
     }
 
     async fn ansi(&self, hl: &HighlightInfo) -> String {
@@ -204,7 +212,7 @@ impl Nvim {
         if let Some(cached) = cache.get(hl) {
             return cached.clone();
         }
-        
+
         let mut codes = Vec::with_capacity(5);
         codes.push("0".to_string());
 
@@ -233,11 +241,11 @@ impl Nvim {
         }
 
         let result = format!("\x1b[{}m", codes.join(";"));
-        
+
         if cache.len() < 1000 {
             cache.insert(hl.clone(), result.clone());
         }
-        
+
         result
     }
 }
