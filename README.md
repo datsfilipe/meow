@@ -27,7 +27,7 @@ note: colorscheme commands cannot be combined with each other or with file argum
 
 ## To Do
 
-- [ ] Handle outputs bigger than terminal screen with less scrolling
+- [X] Handle outputs bigger than terminal screen with less scrolling
 
 ## Contributing  
 
