@@ -85,20 +85,19 @@ impl Nvim {
             let esc = path.replace(' ', r"\ ");
             let init_commands = format!(
                 "edit {esc} \
-             | syntax enable \
-             | set termguicolors \
-             | source {path}/init.lua \
-             | if filereadable('{path}/plugin/colorscheme.lua') \
-             |   silent! source {path}/plugin/colorscheme.lua \
-             | endif \
-             | normal! gg=G",
+                 | syntax enable \
+                 | set termguicolors \
+                 | source {path}/init.lua \
+                 | if filereadable('{path}/plugin/colorscheme.lua') \
+                 |   silent! source {path}/plugin/colorscheme.lua \
+                 | endif \
+                 | normal! gg=G",
                 esc = esc,
                 path = self.config_path
             );
             self.instance.command(&init_commands).await?;
 
             let highlighted_lines = self.instance.execute_lua(EXTRACT_HL_LUA, vec![]).await?;
-
             if let Value::Array(lines) = highlighted_lines {
                 let mut output_lines = Vec::with_capacity(lines.len());
 
