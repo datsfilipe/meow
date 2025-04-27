@@ -10,7 +10,7 @@ https://github.com/user-attachments/assets/b0e3a2c6-b69d-4e66-9d00-9b8727deaf45
 
 ## Installation  
 
-Grab a binary from the [releases](https://github.com/datsfilipe/nv-meow/releases) page. In future will try to add to some package managers.
+Grab a binary from the [releases](https://github.com/datsfilipe/meow/releases) page. In future will try to add to some package managers.
 
 ## Usage  
 
@@ -21,7 +21,7 @@ usage:
   bin --add-colorscheme USER/REPO(/TREE/BRANCH)
   bin --set-colorscheme USER/REPO
   bin --remove-colorscheme USER/REPO
-                                                                                                                                                                        
+
 note: colorscheme commands cannot be combined with each other or with file arguments, nya!
 ```
 

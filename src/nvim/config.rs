@@ -3,22 +3,32 @@ use std::{
     io::{self},
     path::PathBuf,
     process::Command,
+    sync::OnceLock,
 };
 
 use crate::util;
 
-pub const DEFAULT_CONFIG: &str = r#"-- Lua default init for nv-meow
+pub const DEFAULT_CONFIG: &str = r#"-- Lua default init for meow
 vim.opt.compatible = false
 
 vim.cmd([[filetype off]])
 vim.cmd([[filetype plugin indent on]])
 vim.cmd([[syntax on]])
 
-local base = vim.fn.expand('~/.local/share/nv-meow')
+vim.opt_local.shiftwidth = 2
+vim.opt_local.softtabstop = 2
+vim.opt_local.tabstop = 2
+vim.opt_local.smartindent = true
+vim.opt_local.cindent = false
+vim.opt_local.expandtab = true
+
+local base = vim.fn.expand('~/.local/share/meow')
 for _, d in ipairs(vim.fn.glob(base .. '/*', true, true)) do
   vim.opt.runtimepath:append(d)
 end
 "#;
+
+static BASE_DIR_CACHE: OnceLock<Option<PathBuf>> = OnceLock::new();
 
 pub struct Config {
     pub path: PathBuf,
@@ -30,10 +40,10 @@ impl Config {
             Some(p) => p,
             None => {
                 let cfg_home = env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| {
-                    let home = env::var("HOME").unwrap();
+                    let home = env::var("HOME").expect("HOME not set");
                     format!("{}/.config", home)
                 });
-                PathBuf::from(cfg_home).join("nv-meow/init.lua")
+                PathBuf::from(cfg_home).join("meow/init.lua")
             }
         };
 
@@ -46,19 +56,31 @@ impl Config {
     }
 
     fn base_dir(&self) -> io::Result<PathBuf> {
-        let data = match env::var("XDG_DATA_HOME")
-            .or_else(|_| env::var("HOME").map(|h| format!("{}/.local/share", h)))
-        {
-            Ok(dir) => dir,
-            Err(_) => {
-                return Err(io::Error::new(
+        if let Some(dir) = BASE_DIR_CACHE.get() {
+            return dir.clone().ok_or_else(|| {
+                io::Error::new(
                     io::ErrorKind::NotFound,
                     "missing data directory, please set XDG_DATA_HOME, nya!",
-                ));
+                )
+            });
+        }
+
+        let data_dir = match env::var("XDG_DATA_HOME")
+            .or_else(|_| env::var("HOME").map(|h| format!("{}/.local/share", h)))
+        {
+            Ok(dir) => PathBuf::from(dir).join("meow"),
+            Err(_) => {
+                let err = io::Error::new(
+                    io::ErrorKind::NotFound,
+                    "missing data directory, please set XDG_DATA_HOME, nya!",
+                );
+                BASE_DIR_CACHE.get_or_init(|| None);
+                return Err(err);
             }
         };
 
-        Ok(PathBuf::from(data).join("nv-meow"))
+        BASE_DIR_CACHE.get_or_init(|| Some(data_dir.clone()));
+        Ok(data_dir)
     }
 
     fn plugin_dir(&self) -> io::Result<PathBuf> {
@@ -91,21 +113,28 @@ impl Config {
 
         let user = parts[0];
         let repo = parts[1];
-        let plugin_url = format!("https://github.com/{}/{}.git", user, repo);
+        let mut plugin_url = String::with_capacity(user.len() + repo.len() + 25);
+        plugin_url.push_str("https://github.com/");
+        plugin_url.push_str(user);
+        plugin_url.push('/');
+        plugin_url.push_str(repo);
+        plugin_url.push_str(".git");
 
         let name = repo;
         let install = self.base_dir()?.join(name);
-
         if install.exists() {
             return Ok(());
         }
 
         fs::create_dir_all(install.parent().unwrap())?;
         let mut cmd = Command::new("git");
-        cmd.args(&["clone", "--depth=1", &plugin_url, install.to_str().unwrap()]);
+        cmd.arg("clone")
+            .arg("--depth=1")
+            .arg(&plugin_url)
+            .arg(install.to_str().unwrap());
 
         if parts.len() >= 4 && parts[2] == "tree" {
-            cmd.args(&["--branch", parts[3]]);
+            cmd.arg("--branch").arg(parts[3]);
         }
 
         cmd.status()?;
@@ -155,15 +184,17 @@ impl Config {
         }
 
         let repo = parts[1];
-        let scheme = repo.trim_end_matches(".nvim").to_string();
+        let scheme = repo.trim_end_matches(".nvim");
         let plugin_dir = self.plugin_dir()?;
         fs::create_dir_all(&plugin_dir)?;
 
         let colorscheme_file = plugin_dir.join("colorscheme.lua");
-        fs::write(
-            colorscheme_file,
-            format!("vim.cmd([[colorscheme {}]])", scheme),
-        )?;
+        let mut content = String::with_capacity(40 + scheme.len());
+        content.push_str("vim.cmd([[colorscheme ");
+        content.push_str(scheme);
+        content.push_str("]])");
+
+        fs::write(colorscheme_file, content)?;
 
         Ok(())
     }

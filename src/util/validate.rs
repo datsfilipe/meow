@@ -1,17 +1,24 @@
-pub fn is_nvim_installed() -> bool {
-    let output = std::process::Command::new("nvim")
-        .arg("--version")
-        .output()
-        .expect("failed to execute process");
+use std::{process::Command, sync::OnceLock};
 
-    output.status.success()
+static NVIM_INSTALLED: OnceLock<bool> = OnceLock::new();
+static GIT_INSTALLED: OnceLock<bool> = OnceLock::new();
+
+pub fn is_nvim_installed() -> bool {
+    *NVIM_INSTALLED.get_or_init(|| {
+        Command::new("nvim")
+            .arg("--version")
+            .output()
+            .map(|output| output.status.success())
+            .unwrap_or(false)
+    })
 }
 
 pub fn is_git_installed() -> bool {
-    let output = std::process::Command::new("git")
-        .arg("--version")
-        .output()
-        .expect("failed to execute process");
-
-    output.status.success()
+    *GIT_INSTALLED.get_or_init(|| {
+        Command::new("git")
+            .arg("--version")
+            .output()
+            .map(|output| output.status.success())
+            .unwrap_or(false)
+    })
 }
