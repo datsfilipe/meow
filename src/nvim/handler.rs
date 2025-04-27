@@ -52,14 +52,9 @@ impl Nvim {
             .unwrap_or("");
 
         let (n, io, c) = create::new_child_cmd(
-            tokio::process::Command::new(util::path::get_nvim_bin_path()).args(&[
-                "--embed",
-                "-i",
-                "NONE",
-                "--clean",
-                "--noplugin",
-                "-n",
-            ]),
+            tokio::process::Command::new(util::path::get_nvim_bin_path())
+                .args(&["--embed", "-i", "NONE", "--clean", "--noplugin", "-n"])
+                .env("NVIM_APPNAME", "meow"),
             nvim_rs::rpc::handler::Dummy::new(),
         )
         .await
@@ -95,7 +90,8 @@ impl Nvim {
                  | source {path}/init.lua \
                  | if filereadable('{path}/plugin/colorscheme.lua') \
                  |   silent! source {path}/plugin/colorscheme.lua \
-                 | endif",
+                 | endif \
+                 | normal! gg=G",
                 esc = esc,
                 path = self.config_path
             );
