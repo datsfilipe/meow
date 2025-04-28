@@ -17,7 +17,10 @@ async fn main() {
                 cli::args::print_usage();
                 return;
             }
-
+            if args.version.is_some() {
+                cli::args::print_version();
+                return;
+            }
             let config = nvim::config::Config::new(args.config_path);
             if let Some(repo) = args.add_colorscheme {
                 if let Err(e) = config.add_colorscheme(&repo) {
