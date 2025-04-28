@@ -170,10 +170,9 @@ pub fn parse_args() -> Result<Args, String> {
 }
 
 pub fn print_usage() {
-    print_version();
-    eprintln!();
     eprintln!("usage:");
     eprintln!("  meow [FILE]");
+    eprintln!("  meow --version");
     eprintln!("  meow --config PATH [FILE]");
     eprintln!("  meow --add-colorscheme USER/REPO(/TREE/BRANCH)");
     eprintln!("  meow --set-colorscheme USER/REPO");
