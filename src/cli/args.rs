@@ -8,6 +8,7 @@ pub struct Args {
     pub set_colorscheme: Option<String>,
     pub remove_colorscheme: Option<String>,
     pub help: Option<bool>,
+    pub version: Option<bool>,
 }
 
 pub fn parse_args() -> Result<Args, String> {
@@ -19,6 +20,7 @@ pub fn parse_args() -> Result<Args, String> {
         set_colorscheme: None,
         remove_colorscheme: None,
         help: None,
+        version: None,
     };
 
     let mut expecting_config_path = false;
@@ -143,6 +145,9 @@ pub fn parse_args() -> Result<Args, String> {
             "--help" => {
                 result.help = Some(true);
             }
+            "--version" => {
+                result.version = Some(true);
+            }
             _ => {
                 if seen_colorscheme_command {
                     return Err("file arguments not allowed with colorscheme commands, nya!".into());
@@ -175,4 +180,9 @@ pub fn print_usage() {
     eprintln!(
         "note: colorscheme commands cannot be combined with each other or with file arguments, nya!"
     );
+}
+
+pub fn print_version() {
+    let version = env!("CARGO_PKG_VERSION");
+    eprintln!("meow {}", version);
 }
