@@ -184,5 +184,5 @@ pub fn print_usage() {
 
 pub fn print_version() {
     let version = env!("CARGO_PKG_VERSION");
-    eprintln!("meow {}", version);
+    eprintln!("meow v{}", version);
 }
