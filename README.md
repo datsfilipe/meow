@@ -8,9 +8,58 @@ Meow uses neovim text editor to print highlighted text in the terminal. Yeah, li
 
 https://github.com/user-attachments/assets/b0e3a2c6-b69d-4e66-9d00-9b8727deaf45
 
-## Installation  
+## Installation
 
-Grab a binary from the [releases](https://github.com/datsfilipe/meow/releases) page. In future will try to add to some package managers.
+If the following is not applicable for you, you can just grab a binary from the [releases](https://github.com/datsfilipe/meow/releases) page.
+
+### Arch Linux
+
+1. Install it from the [AUR](https://aur.archlinux.org/packages/meow-nvim) with your favorite aur helper.
+2. Example with paru:
+
+```bash
+paru -Syu meow-nvim
+```
+
+**Note**: Special thanks to [@fk29g](https://github.com/fk29g) for creating and maintaining the [meow-nvim](https://aur.archlinux.org/packages/meow-nvim) AUR package.
+
+### NixOS
+
+1. Add it to your flake inputs:
+
+```nix
+nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+meow = {
+  inputs.nixpkgs.follows = "nixpkgs-unstable";
+  url = "github:datsfilipe/meow/main";
+};
+```
+
+And then add it the following to you configuration:
+
+```nix
+{
+  pkgs,
+  meow,
+  ...
+}: {
+  home.packages = [
+    meow.packages.${pkgs.system}.default
+  ];
+}
+```
+
+2. Or you can install it in a less declarative way with a single command:
+
+```bash
+nix profile install github:datsfilipe/meow/main
+```
+
+**Note**: you can also just run it with:
+
+```bash
+nix run github:datsfilipe/meow/main
+```
 
 ## Usage  
 
