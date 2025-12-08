@@ -1,2 +1,4 @@
 .direnv
 /target
+/vendor
+.cargo/config.toml
