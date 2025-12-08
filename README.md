@@ -12,7 +12,8 @@ It spawns a headless Neovim instance to render files exactly as you see them in 
 
 ## Preview
 
-![Meow Preview](./assets/preview.mp4)
+<video src="./assets/preview.mp4" controls="controls" style="max-width: 100%;">
+</video>
 
 ## Features
 
