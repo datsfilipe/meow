@@ -1,8 +1,13 @@
 [package]
-name = "meow"
+name = "rmeow"
 version = "2.0.0"
 edition = "2024"
 description = "A command line tool that aims to be a replacement for cat/bat with better highlighting"
+license = "MIT"
+
+[[bin]]
+name = "meow"
+path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.4", features = ["derive"] }
