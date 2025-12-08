@@ -1,96 +1,105 @@
 # Meow
 
+<div align="center">
+
 ## Description
 
-Meow uses neovim text editor to print highlighted text in the terminal. Yeah, like `cat`, `bat`, etc. But with neovim, which allow it to be more configurable, since it uses lua. The tool config is managed in another location, out
+**Meow** is a terminal printing tool (like `cat` or `bat`) that renders text using your **existing Neovim configuration**.
+
+It spawns a headless Neovim instance to render files exactly as you see them in your editor—colorscheme, syntax highlighting, and all—while maintaining high performance via a custom Lua rendering engine and Rust multithreading.
+
+</div>
 
 ## Preview
 
-https://github.com/user-attachments/assets/b0e3a2c6-b69d-4e66-9d00-9b8727deaf45
+https://github.com/user-attachments/assets/3f7933ad-c7db-4fd6-976c-ab7782a41599
+
+## Features
+
+- **Neovim Engine:** Uses your local `~/.config/nvim` (no separate config required).
+- **Parallel Processing:** Renders multiple files simultaneously using all CPU threads.
+- **Smart Paging:** Automatically pipes to `less` only if the file exceeds your terminal height.
+- **Zero Overhead:** Detects binary files and devices (like `/dev/input/mice`) and streams them with raw `cat` speed.
+- **Performance:** Includes a "Fast Mode" for large files (>100KB) to skip rendering latency, unless forced.
 
 ## Installation
 
-If the following is not applicable for you, you can just grab a binary from the [releases](https://github.com/datsfilipe/meow/releases) page.
+### NixOS / Home Manager (Flake)
 
-### Arch Linux
-
-1. Install it from the [AUR](https://aur.archlinux.org/packages/meow-nvim) with your favorite aur helper.
-2. Example with paru:
-
-```bash
-paru -Syu meow-nvim
-```
-
-**Note**: Special thanks to [@fk29g](https://github.com/fk29g) for creating and maintaining the [meow-nvim](https://aur.archlinux.org/packages/meow-nvim) AUR package.
-
-### NixOS
-
-1. Add it to your flake inputs:
+Add `meow` to your `flake.nix` inputs:
 
 ```nix
-nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-meow = {
-  inputs.nixpkgs.follows = "nixpkgs-unstable";
-  url = "github:datsfilipe/meow/main";
-};
+inputs.meow.url = "github:datsfilipe/meow";
 ```
 
-And then add it the following to you configuration:
+Then add it to your system packages:
 
 ```nix
-{
-  pkgs,
-  meow,
-  ...
-}: {
-  home.packages = [
-    meow.packages.${pkgs.system}.default
-  ];
-}
+environment.systemPackages = [
+  inputs.meow.packages.${pkgs.system}.default
+];
 ```
 
-2. Or you can install it in a less declarative way with a single command:
+Or install declaratively in your `home-manager` config.
+
+### Manual
+
+You can run it directly without installing:
 
 ```bash
-nix profile install github:datsfilipe/meow/main
+nix run github:datsfilipe/meow
 ```
 
-**Note**: you can also just run it with:
+## Usage
 
 ```bash
-nix run github:datsfilipe/meow/main
+# Print a single file (highlights automatically)
+meow src/main.rs
+
+# Print multiple files (renders in parallel)
+meow src/*.rs
+
+# Force syntax highlighting on large files (>100KB)
+meow -f assets/huge_file.lua
+
+# Stream devices (zero overhead)
+meow /dev/input/mice
 ```
 
-## Usage  
+## Benchmarks
 
-```bash
-usage:
-  bin [FILE]
-  bin --config PATH [FILE]
-  bin --add-colorscheme USER/REPO(/TREE/BRANCH)
-  bin --set-colorscheme USER/REPO
-  bin --remove-colorscheme USER/REPO
+I remember...
 
-note: colorscheme commands cannot be combined with each other or with file arguments, nya!
-```
+<div align="center">
 
-## To Do
+!["Can it do 'sudo cat /dev/input/mice'?" comment on reddit post.](./assets/r_comment.jpg)
 
-- [X] Handle outputs bigger than terminal screen with less scrolling
+</div>
 
-## Contributing  
+Now it can!
 
-Guidelines for contributing to the project:  
+**1. Throughput (Raw Streaming)**
+*Meow vs Cat streaming `/dev/input/mice` (Infinite Binary Stream)*
 
-1. Fork the repository.  
-2. Make your changes.  
-3. Submit a pull request.
-4. Nothing fancy, contributions are welcome.
+| Command | Data Moved (5s) | Overhead |
+| :--- | :--- | :--- |
+| `cat` | ~104 KB | 0% |
+| `meow` | ~99 KB | ~0% |
 
-## Aknowledgements
+**2. Syntax Highlighting (Large File)**
+*Meow vs Bat rendering a 2.5MB Lua file*
+
+| Command | Time | Relative Speed |
+| :--- | :--- | :--- |
+| `meow --force-color` | **699.9 ms** | **1.0x** |
+| `bat --paging=never --style=plain --color=always` | 2.254 s | 3.2x slower |
+
+*Note: `cat` (no highlight) takes ~1ms. That is not beatable. But we did beat bat :)*
+
+## Acknowledgements
 
 - [nvim-cat](https://github.com/lincheney/nvim-cat) - The inspiration for this project
 
-## License  
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
