@@ -12,8 +12,7 @@ It spawns a headless Neovim instance to render files exactly as you see them in 
 
 ## Preview
 
-<video src="./assets/preview.mp4" controls="controls" style="max-width: 100%;">
-</video>
+https://github.com/user-attachments/assets/3f7933ad-c7db-4fd6-976c-ab7782a41599
 
 ## Features
 
