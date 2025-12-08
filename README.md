@@ -42,6 +42,14 @@ environment.systemPackages = [
 
 Or install declaratively in your `home-manager` config.
 
+### Cargo
+
+You can install the latest release from crates.io:
+
+```bash
+cargo install rmeow
+```
+
 ### Manual
 
 You can run it directly without installing:
