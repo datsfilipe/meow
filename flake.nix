@@ -6,13 +6,16 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+  }:
+    flake-utils.lib.eachDefaultSystem (
+      system: let
         pkgs = nixpkgs.legacyPackages.${system};
         manifest = (pkgs.lib.importTOML ./Cargo.toml).package;
-      in
-      {
+      in {
         packages.default = pkgs.rustPlatform.buildRustPackage {
           pname = manifest.name;
           version = manifest.version;
@@ -23,12 +26,12 @@
             lockFile = ./Cargo.lock;
           };
 
-          buildInputs = [ ];
-          nativeBuildInputs = [ pkgs.makeWrapper ];
+          buildInputs = [];
+          nativeBuildInputs = [pkgs.makeWrapper];
 
           postInstall = ''
             wrapProgram $out/bin/meow \
-              --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.neovim pkgs.less ]}
+              --prefix PATH : ${pkgs.lib.makeBinPath [pkgs.less]}
           '';
 
           meta = with pkgs.lib; {
