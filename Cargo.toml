@@ -2,6 +2,7 @@
 name = "meow"
 version = "2.0.0"
 edition = "2024"
+description = "A command line tool that aims to be a replacement for cat/bat with better highlighting"
 
 [dependencies]
 clap = { version = "4.4", features = ["derive"] }
