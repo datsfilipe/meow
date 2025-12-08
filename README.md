@@ -92,7 +92,7 @@ Now it can!
 | Command | Time | Relative Speed |
 | :--- | :--- | :--- |
 | `meow --force-color` | **699.9 ms** | **1.0x** |
-| `bat` | 2.254 s | 3.2x slower |
+| `bat --paging=never --style=plain --color=always` | 2.254 s | 3.2x slower |
 
 *Note: `cat` (no highlight) takes ~1ms. That is not beatable. But we did beat bat :)*
 
