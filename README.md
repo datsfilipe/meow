@@ -1,14 +1,18 @@
 # Meow
 
+<div align="center">
+
 ## Description
 
 **Meow** is a terminal printing tool (like `cat` or `bat`) that renders text using your **existing Neovim configuration**.
 
 It spawns a headless Neovim instance to render files exactly as you see them in your editor—colorscheme, syntax highlighting, and all—while maintaining high performance via a custom Lua rendering engine and Rust multithreading.
 
+</div>
+
 ## Preview
 
-https://github.com/user-attachments/assets/b0e3a2c6-b69d-4e66-9d00-9b8727deaf45
+![Meow Preview](./assets/preview.mp4)
 
 ## Features
 
@@ -64,7 +68,15 @@ meow /dev/input/mice
 
 ## Benchmarks
 
-Meow can handle `/dev/input/mice`!
+I remember...
+
+<div align="center">
+
+!["Can it do 'sudo cat /dev/input/mice'?" comment on reddit post.](./assets/r_comment.jpg)
+
+</div>
+
+Now it can!
 
 **1. Throughput (Raw Streaming)**
 *Meow vs Cat streaming `/dev/input/mice` (Infinite Binary Stream)*
