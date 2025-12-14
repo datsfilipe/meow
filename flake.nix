@@ -53,6 +53,9 @@
             rustfmt
             clippy
             hyperfine
+            alejandra
+            bat
+            stylua
           ];
         };
       }

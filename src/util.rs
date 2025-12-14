@@ -1,56 +1,49 @@
-use std::fs::{self, File};
-use std::io::{self, Read};
+use std::fs::File;
+use std::io::{self, BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
+use std::process::Command;
+
+pub fn write_temp_lua_script(content: &str) -> io::Result<PathBuf> {
+    let mut path = std::env::temp_dir();
+    path.push(format!("meow_script_{}.lua", std::process::id()));
+    std::fs::write(&path, content)?;
+    Ok(path)
+}
 
 pub fn is_binary_or_device(path: &Path) -> io::Result<bool> {
-    let metadata = fs::metadata(path)?;
+    let mut file = File::open(path)?;
+    let mut buffer = [0; 8192];
+    let n = file.read(&mut buffer)?;
 
-    if metadata.is_dir() {
-        return Err(io::Error::new(io::ErrorKind::Other, "Is a directory"));
-    }
-
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::FileTypeExt;
-        if metadata.file_type().is_char_device() || metadata.file_type().is_block_device() {
+    for &b in &buffer[..n] {
+        if b == 0 {
             return Ok(true);
         }
     }
-
-    let mut file = File::open(path)?;
-    let mut buffer = [0; 1024];
-    let n = file.read(&mut buffer)?;
-
-    if buffer[..n].contains(&0) {
-        return Ok(true);
-    }
-
     Ok(false)
 }
 
 pub fn file_exceeds_terminal_height(path: &Path) -> io::Result<bool> {
-    let (_, h) = term_size::dimensions().unwrap_or((80, 24));
+    let output = Command::new("tput").arg("lines").output();
+
+    let height = match output {
+        Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout)
+            .trim()
+            .parse::<usize>()
+            .unwrap_or(24),
+        _ => 24,
+    };
 
     let file = File::open(path)?;
-    let reader = std::io::BufReader::new(file);
-    let mut count = 0;
+    let reader = BufReader::new(file);
 
-    use std::io::BufRead;
+    let mut lines = 0;
     for _ in reader.lines() {
-        count += 1;
-        if count > h {
+        lines += 1;
+        if lines > height {
             return Ok(true);
         }
     }
 
     Ok(false)
-}
-
-pub fn write_temp_lua_script(content: &str) -> io::Result<PathBuf> {
-    let mut temp_path = std::env::temp_dir();
-    let pid = std::process::id();
-    temp_path.push(format!("meow_{}.lua", pid));
-
-    fs::write(&temp_path, content)?;
-    Ok(temp_path)
 }

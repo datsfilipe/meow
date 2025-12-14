@@ -14,7 +14,7 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.4", features = ["derive"] }
-term_size = "0.3" 
+crossterm = "0.29.0"
 
 [target.'cfg(unix)'.dependencies]
 nix = { version = "0.27", features = ["fs"] }
