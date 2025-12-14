@@ -4,9 +4,7 @@
 
 ## Description
 
-**Meow** is a terminal printing tool that renders text using your **existing Neovim configuration**.
-
-While great tools like `bat` exist, they use their own syntax engines. **Meow** is for users who want their terminal output to look exactly like their editor—colorscheme, custom highlights, and all—without managing a second set of configs. It balances this Neovim-fidelity with high performance via a custom Lua generator and Rust multithreading.
+Meow is a terminal printing tool that uses a headless Neovim instance to handle syntax highlighting. It provides a simple way to get editor-quality colors in your terminal using your local colorscheme without managing separate bat or pygments configs.
 
 </div>
 
@@ -16,11 +14,11 @@ https://github.com/user-attachments/assets/298e6135-b01e-454f-bbed-0f363dce52fa
 
 ## Features
 
-- **Neovim Engine:** Uses your local `~/.config/nvim`. If you've spent hours rice-ing your editor, Meow lets you see that effort everywhere.
-- **Parallel Rendering:** Uses all CPU threads to process files.
-- **Built-in Pager:** Seamlessly transitions to a TUI pager when files exceed the terminal height.
-- **Device Support:** Handles `/dev/input/mice` and other character devices with `cat`-like streaming.
-- **Fast Path:** Transparently skips highlighting for massive files unless you explicitly ask for it, keeping the tool snappy for general use.
+- **Neovim Highlighting**: Uses Neovim's syntax engine and your active MEOW_THEME or system colorscheme.
+- **Parallel Processing**: Multithreaded rendering for high performance.
+- **Built-in Pager**: Interactive TUI pager for files that exceed terminal height.
+- **Raw Streaming**: cat-equivalent speed for binary files and devices (e.g., /dev/input/mice).
+- **Fast Mode**: Automatically skips highlighting for large files to eliminate latency.
 
 ## Installation
 
@@ -64,10 +62,7 @@ meow /dev/input/mice
 
 ## Benchmarks
 
-Transparency is key: `bat` is a highly optimized tool. When no highlighting is required, `bat` is significantly faster. However, when it comes to the heavy lifting of full syntax highlighting on large files, Meow's parallelized Neovim engine takes the lead.
-
-**1. Heavy Highlighting (Large File)**
-*Rendering a 1.2MB Lua file with full color*
+**1. Syntax Highlighting (Large File)**
 
 | Command | Time | Result |
 | :--- | :--- | :--- |
@@ -75,15 +70,13 @@ Transparency is key: `bat` is a highly optimized tool. When no highlighting is r
 | `bat --color=always` | ~1.476 s | 7.41x slower |
 
 **2. Standard Printing (Fast Path)**
-*Printing a 1.2MB Lua file without highlighting*
 
 | Command | Time | Result |
 | :--- | :--- | :--- |
 | `bat` | **~12.7 ms** | **1.0x (Winner)** |
 | `meow` | ~52.9 ms | 4.16x slower |
 
-**3. Raw Throughput**
-*Streaming `/dev/input/mice` for 5 seconds*
+**3. Raw Throughput** (*Streaming `/dev/input/mice` for 5 seconds*)
 
 | Command | Data Moved | Efficiency |
 | :--- | :--- | :--- |
@@ -92,8 +85,8 @@ Transparency is key: `bat` is a highly optimized tool. When no highlighting is r
 
 ## Acknowledgements
 
-- [nvim-cat](https://github.com/lincheney/nvim-cat) - The inspiration for this project.
+- [nvim-cat](https://github.com/lincheney/nvim-cat) - inspiration for the initial idea of this project.
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](./LICENSE).
