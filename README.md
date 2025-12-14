@@ -12,7 +12,7 @@ While great tools like `bat` exist, they use their own syntax engines. **Meow** 
 
 ## Preview
 
-[https://github.com/user-attachments/assets/3f7933ad-c7db-4fd6-976c-ab7782a41599](https://github.com/user-attachments/assets/3f7933ad-c7db-4fd6-976c-ab7782a41599)
+https://github.com/user-attachments/assets/298e6135-b01e-454f-bbed-0f363dce52fa
 
 ## Features
 
