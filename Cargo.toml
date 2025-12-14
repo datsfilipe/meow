@@ -1,6 +1,6 @@
 [package]
 name = "rmeow"
-version = "2.0.1"
+version = "2.1.1"
 edition = "2024"
 description = "A command line tool that aims to be a replacement for cat/bat with better highlighting"
 license = "MIT"
