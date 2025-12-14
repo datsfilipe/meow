@@ -2,8 +2,6 @@
 
 # Meow
 
-## Description
-
 Meow is a terminal printing tool that uses a headless Neovim instance to handle syntax highlighting. It provides a simple way to get editor-quality colors in your terminal using your local colorscheme without managing separate bat or pygments configs.
 
 </div>
